@@ -2,6 +2,7 @@ package com.igorcunha.estacionamento.dao;
 
 import com.igorcunha.estacionamento.model.entities.ParkingRecords;
 import com.igorcunha.estacionamento.model.entities.Vehicle;
+import com.igorcunha.estacionamento.model.enums.RecordStatus;
 import com.igorcunha.estacionamento.util.DB;
 import com.igorcunha.estacionamento.util.DbException;
 
@@ -127,16 +128,50 @@ public class VehicleDao implements VehicleDaoInterface {
         ResultSet rs = null;
         List<ParkingRecords> records = new ArrayList<>();
         try {
-            st = conn.prepareStatement("SELECT parkingRecord.* FROM parkingRecord INNER JOIN vehicles ON parkingRecord.vehiclePlate = vehicles.vehiclePlate ORDER BY vehiclePlate");
+            st = conn.prepareStatement("SELECT parkingRecord.* FROM parkingRecord WHERE parkingRecord.vehiclePlate = ? ORDER BY entryTime");
+            st.setString(1, vehicle.getPlate());
             rs = st.executeQuery();
             while (rs.next()) {
                 ParkingRecords record = new ParkingRecords();
+                record.setRecordId(rs.getInt("registerID"));
                 record.setVehicle(vehicle);
                 record.setEntryTime(rs.getTimestamp("entryTime").toLocalDateTime());
-                record.setExitTime(rs.getTimestamp("exitTime").toLocalDateTime());
+                if (rs.getTimestamp("exitTime") != null) {
+                    record.setExitTime(rs.getTimestamp("exitTime").toLocalDateTime());
+                }
+                if (rs.getString("status") != null) {
+                    record.setStatus(RecordStatus.valueOf(rs.getString("status")));
+                }
+                if (rs.getDouble("price") != 0) {
+                    record.setPrice(rs.getDouble("price"));
+                }
                 records.add(record);
             }
             return records;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
+    @Override
+    public List<Vehicle> findAllActiveVehicles() {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        List<Vehicle> vehicles = new ArrayList<>();
+        try {
+            st = conn.prepareStatement("SELECT DISTINCT vehicles.* FROM vehicles JOIN parkingRecord ON vehicles.vehiclePlate = parkingRecord.vehiclePlate WHERE parkingRecord.status = 'ACTIVE'");
+            rs = st.executeQuery();
+            while (rs.next()) {
+                Vehicle vehicle = new Vehicle();
+                vehicle.setPlate(rs.getString("vehiclePlate"));
+                vehicle.setModel(rs.getString("vehicleModel"));
+                vehicle.setVehicleId(rs.getInt("vehicleID"));
+                vehicles.add(vehicle);
+            }
+            return vehicles;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
         } finally {

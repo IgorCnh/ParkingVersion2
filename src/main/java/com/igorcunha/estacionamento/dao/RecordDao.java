@@ -63,11 +63,11 @@ public class RecordDao implements RecordDaoInterface {
     }
 
     @Override
-    public void deleteRecordByPlate(Vehicle vehicle) {
+    public void deleteRecordByPlate(String plate) {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement("DELETE FROM parkingRecord WHERE vehiclePlate = ?");
-            st.setString(1, vehicle.getPlate());
+            st.setString(1, plate);
             st.executeUpdate();
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -101,6 +101,38 @@ public class RecordDao implements RecordDaoInterface {
                 records.add(record);
             }
             return records;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+
+
+    }
+
+    @Override
+    public ParkingRecords findActiveRecord(Vehicle vehicle) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement("SELECT parkingRecord.*, vehicles.vehicleModel FROM parkingRecord join vehicles on vehicles.vehiclePlate = parkingRecord.vehiclePlate WHERE parkingRecord.vehiclePlate = ? AND status = 'ACTIVE'");
+            st.setString(1, vehicle.getPlate());
+            rs = st.executeQuery();
+            if (rs.next()) {
+                ParkingRecords record = new ParkingRecords();
+                record.setRecordId(rs.getInt("registerID"));
+                record.setVehicle(vehicle = new Vehicle(vehicle.getPlate(), rs.getString("vehicleModel")));
+                record.setEntryTime(rs.getTimestamp("entryTime").toLocalDateTime());
+                if (rs.getTimestamp("exitTime") != null) {
+                    record.setExitTime(rs.getTimestamp("exitTime").toLocalDateTime());
+                }
+                if (rs.getString("status") != null) {
+                    record.setStatus(RecordStatus.valueOf(rs.getString("status")));
+                }
+                return record;
+            }
+            return null;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
         } finally {

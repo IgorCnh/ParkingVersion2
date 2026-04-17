@@ -8,6 +8,7 @@ import java.util.List;
 public interface RecordDaoInterface {
      void insertRecord(ParkingRecords record);
      void updateRecordExit(ParkingRecords record);
-     void deleteRecordByPlate(Vehicle vehicle);
+     void deleteRecordByPlate(String plate);
      List<ParkingRecords> findAllRecords();
+     ParkingRecords findActiveRecord(Vehicle vehicle);
 }

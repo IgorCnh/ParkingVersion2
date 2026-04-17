@@ -12,4 +12,5 @@ public interface VehicleDaoInterface {
     Vehicle findVehicleByPlate(String plate);
     List<Vehicle> findAllVehicles();
     List<ParkingRecords> findAllVehicleRecords(Vehicle vehicle);
+    List<Vehicle> findAllActiveVehicles();
 }

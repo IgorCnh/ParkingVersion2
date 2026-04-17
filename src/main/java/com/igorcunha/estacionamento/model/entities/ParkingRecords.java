@@ -14,10 +14,10 @@ public class ParkingRecords {
     private RecordStatus status;
     private double price;
 
-    public ParkingRecords(Vehicle vehicle, LocalDateTime entryTime, RecordStatus status) {
+    public ParkingRecords(Vehicle vehicle) {
         this.vehicle = vehicle;
-        this.entryTime = entryTime;
-        this.status = status;
+        this.entryTime = LocalDateTime.now();
+        this.status = RecordStatus.ACTIVE;
     }
 
     public ParkingRecords() {
@@ -71,12 +71,19 @@ public class ParkingRecords {
         this.price = price;
     }
 
+    public void updateRecord(LocalDateTime exitTime, double price) {
+        this.exitTime = exitTime;
+        this.price = price;
+    }
+
+
     @Override
     public String toString() {
-        return "Record data: " +
+        return "RECORD DATA: \n" +
                 "Vehicle: " + vehicle.getPlate() + " - " + vehicle.getModel() +
                 ", Entry Time: " + entryTime +
                 ", Exit Time: " + exitTime +
+                ", Price: " + price +
                 ", Status: " + status;
     }
 }
