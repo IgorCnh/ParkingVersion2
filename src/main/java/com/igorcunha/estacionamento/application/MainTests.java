@@ -6,6 +6,7 @@ import com.igorcunha.estacionamento.dao.VehicleDao;
 import com.igorcunha.estacionamento.model.entities.Vehicle;
 import com.igorcunha.estacionamento.service.ParkingService;
 
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class MainTests {
@@ -58,8 +59,16 @@ public class MainTests {
 //           System.out.println("Parking record 2 updated successfully.");
 //      }
 
-        vehicleDao.deleteVehicleByPlate("lto2k26".toUpperCase());
-         Vehicle Vehicle2 = vehicleDao.findVehicleByPlate("hxj7l87".toUpperCase());
+//        vehicleDao.deleteVehicleByPlate("lto2k26".toUpperCase());
+//         Vehicle Vehicle2 = vehicleDao.findVehicleByPlate("hxj7l87".toUpperCase());
+//         if (Vehicle2 == null) {
+
+//        recordDao.findAllRecords().forEach(System.out::println);
+//        ParkingService ps = new ParkingService();
+//        LocalDateTime exit = ps.exitTimeVerifier(new Scanner(System.in), "hxj7l87");
+//        System.out.println("Exit time: " + exit);
+
+//        vehicleDao.deleteVehicleByPlate("HJX2T67");
 
     }
 }

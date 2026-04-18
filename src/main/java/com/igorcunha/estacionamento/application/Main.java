@@ -5,8 +5,10 @@ import com.igorcunha.estacionamento.dao.RecordDao;
 import com.igorcunha.estacionamento.dao.VehicleDao;
 import com.igorcunha.estacionamento.model.entities.ParkingRecords;
 import com.igorcunha.estacionamento.model.entities.Vehicle;
+import com.igorcunha.estacionamento.model.enums.RecordStatus;
 import com.igorcunha.estacionamento.service.ParkingService;
 
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class Main {
@@ -15,11 +17,16 @@ public class Main {
         VehicleDao vehicleDao = DaoFactory.createVehicleDao();
         RecordDao recordDao = DaoFactory.createRecordDao();
         Scanner sc = new Scanner(System.in);
-        System.out.println("Welcome to the parking lot management system! \nSelect an option: \n1) - Register a new Vehicle \n2) - Exit with a vehicle \n3) - Find All Vehicles inside parking \n4) - Exit Program");
-        int option = sc.nextInt();
+        System.out.println("Welcome to the parking lot management system! \nSelect an option: \n1) - Park \n2) - Exit with a vehicle \n3) - Find All Vehicles inside parking \n4) - Exit Program\nSelect one => ");
+        int option = 0;
+        try {
+            option = sc.nextInt();
+        }catch (Exception e){
+            System.out.println("Invalid option, please select a valid option.");
+        }
         switch (option) {
             case 1:
-                System.out.println("Option 1 selected: Register a new Vehicle \nType the vehicle plate: ");
+                System.out.println("Option 1 selected: Park \nType the vehicle plate: ");
                 String plate = parkingService.signValidator(sc);
                 sc.nextLine();
                 System.out.println("Type the vehicle model: ");
@@ -39,7 +46,33 @@ public class Main {
                 }else{
                     System.out.println("Vehicle Already Parked\n" + recordDao.findActiveRecord(vehicle));
                 }
-
+                break;
+            case 2:
+                System.out.println("Option 2 selected: Exit with a vehicle \nType the vehicle plate: ");
+                plate = parkingService.signValidator(sc);
+                sc.nextLine();
+                vehicle = vehicleDao.findVehicleByPlate(plate);
+                ParkingRecords record;
+                if(vehicle == null) {
+                    System.out.println("Vehicle with plate " + plate + " not found");
+                }else{
+                    boolean parked = parkingService.isVehicleAlreadyParked(vehicle);
+                    if(parked){
+                        record = recordDao.findActiveRecord(vehicle);
+                        System.out.println("Vehicle is inside the parking! \nType the exit date and time in the format dd/MM/yyyy HH:mm: ");
+                        LocalDateTime exitTime = parkingService.exitTimeVerifier(sc, plate);
+                        record.setExitTime(exitTime);
+                        recordDao.updateRecordExitTime(record);
+                        System.out.println("Exit time succesfully saved! \nTime to calculate the price: \nCalculating price...\nThe final price is: ");
+                        double finalPrice = parkingService.calculateFinalPrice(record);
+                        record.setPrice(finalPrice);
+                        record.setStatus(RecordStatus.FINISHED);
+                        recordDao.finishRecord(record);
+                        System.out.println("Vehicle exited successfully! \n" + record);
+                    }else{
+                        System.out.println("Vehicle not parked. Please check the plate and try again.");
+                    }
+                }
         }
     }
 }

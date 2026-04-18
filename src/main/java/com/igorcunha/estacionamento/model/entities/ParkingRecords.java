@@ -71,11 +71,6 @@ public class ParkingRecords {
         this.price = price;
     }
 
-    public void updateRecord(LocalDateTime exitTime, double price) {
-        this.exitTime = exitTime;
-        this.price = price;
-    }
-
 
     @Override
     public String toString() {

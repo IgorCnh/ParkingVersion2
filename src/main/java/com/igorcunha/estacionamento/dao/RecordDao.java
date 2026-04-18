@@ -7,6 +7,7 @@ import com.igorcunha.estacionamento.util.DB;
 import com.igorcunha.estacionamento.util.DbException;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class RecordDao implements RecordDaoInterface {
             st = conn.prepareStatement("INSERT INTO parkingRecord (vehiclePlate, entryTime, status) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             st.setString(1, vehicle.getPlate());
             st.setTimestamp(2, Timestamp.valueOf(record.getEntryTime()));
-            st.setString(3, RecordStatus.ACTIVE.toString());
+            st.setString(3, RecordStatus.ACTIVE.name());
             int rowsAffected = st.executeUpdate();
             if (rowsAffected > 0) {
                 ResultSet rs = st.getGeneratedKeys();
@@ -46,15 +47,32 @@ public class RecordDao implements RecordDaoInterface {
     }
 
     @Override
-    public void updateRecordExit(ParkingRecords record) {
+    public void updateRecordExitTime(ParkingRecords record) {
         PreparedStatement st = null;
         try {
-            st = conn.prepareStatement("UPDATE parkingRecord SET exitTime=?, status=?, price=? WHERE vehiclePlate=? AND status = 'ACTIVE'");
+            st = conn.prepareStatement("UPDATE parkingRecord SET exitTime=? WHERE vehiclePlate=? AND status = 'ACTIVE'");
             st.setTimestamp(1, Timestamp.valueOf(record.getExitTime()));
-            st.setString(2, RecordStatus.FINISHED.toString());
-            st.setDouble(3, record.getPrice());
-            st.setString(4, record.getVehicle().getPlate());
+            st.setString(2, record.getVehicle().getPlate());
             st.executeUpdate();
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+        }
+    }
+
+    @Override
+    public void finishRecord(ParkingRecords record) {
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement("UPDATE parkingRecord SET status=?, price=? WHERE vehiclePlate=? AND status = 'ACTIVE'");
+            st.setString(1, RecordStatus.FINISHED.name());
+            st.setDouble(2, record.getPrice());
+            st.setString(3, record.getVehicle().getPlate());
+            int rowsAffected = st.executeUpdate();
+            if (rowsAffected == 0) {
+                System.out.println("Warning: No records were updated. The record may not exist or status is not ACTIVE.");
+            }
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
         } finally {
@@ -140,4 +158,24 @@ public class RecordDao implements RecordDaoInterface {
             DB.closeResultSet(rs);
         }
     }
+
+    public LocalDateTime getEntryTime(String plate) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement("SELECT entryTime FROM parkingRecord WHERE status = 'ACTIVE' AND vehiclePlate = ?");
+            st.setString(1, plate);
+            rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getTimestamp("entryTime").toLocalDateTime();
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
 }
