@@ -12,4 +12,5 @@ public interface RecordDaoInterface {
      void deleteRecordByPlate(String plate);
      List<ParkingRecords> findAllRecords();
      ParkingRecords findActiveRecord(Vehicle vehicle);
+     List<ParkingRecords> findAllActiveRecords();
 }

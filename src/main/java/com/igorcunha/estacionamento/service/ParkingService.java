@@ -5,7 +5,11 @@ import com.igorcunha.estacionamento.dao.RecordDao;
 import com.igorcunha.estacionamento.dao.VehicleDao;
 import com.igorcunha.estacionamento.model.entities.ParkingRecords;
 import com.igorcunha.estacionamento.model.entities.Vehicle;
+import com.igorcunha.estacionamento.util.DB;
+import com.igorcunha.estacionamento.util.DbException;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +20,7 @@ public class ParkingService {
     RecordDao recordDao = DaoFactory.createRecordDao();
     VehicleDao vehicleDao = DaoFactory.createVehicleDao();
 
-    public String signValidator(Scanner sc) {
+    public String plateValidator(Scanner sc) {
         String pattern = "^[A-Z]{3}[0-9][A-Z][0-9]{2}$";
         String plate = sc.next().toUpperCase();
         boolean isValid = plate.matches(pattern);
@@ -55,7 +59,7 @@ public class ParkingService {
         System.out.println(String.format("R$ %.2f", price));
         return price;
     }
-    public boolean isVehicleAlreayRegistered(Vehicle vehicle) {
+    public boolean isVehicleAlreadyRegistered(Vehicle vehicle) {
         return vehicleDao.findVehicleByPlate(vehicle.getPlate()) != null;
     }
 
@@ -83,6 +87,45 @@ public class ParkingService {
                 }
             }
             isValid = exitTime.isAfter(entryTime);
+        }
+    }
+    public void handleVehicleEntry(String plate, String model) {
+        Connection conn = DB.getConnection();
+        try {
+            conn.setAutoCommit(false);
+
+            Vehicle vehicle = new Vehicle(plate, model);
+
+            if (!isVehicleAlreadyRegistered(vehicle)) {
+                vehicleDao.insertVehicle(vehicle);
+            } else {
+                vehicle = vehicleDao.findVehicleByPlate(plate);
+                System.out.println("Vehicle already registered, skipping insert.");
+            }
+
+            if (!isVehicleAlreadyParked(vehicle)) {
+                ParkingRecords record = new ParkingRecords(vehicle);
+                recordDao.insertRecord(record);
+                System.out.println("Vehicle parked successfully!\n" + record);
+            } else {
+                System.out.println("Vehicle already parked.\n" + recordDao.findActiveRecord(vehicle));
+            }
+
+            conn.commit();
+
+        } catch (Exception e) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                throw new DbException("Rollback failed: " + ex.getMessage());
+            }
+            throw new DbException("Transaction failed: " + e.getMessage());
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new DbException(e.getMessage());
+            }
         }
     }
 }

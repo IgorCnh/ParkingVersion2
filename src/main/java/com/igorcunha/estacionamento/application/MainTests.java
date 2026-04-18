@@ -24,7 +24,7 @@ public class MainTests {
 //       }
 //        Scanner sc = new Scanner(System.in);
 //        ParkingService parkingService = new ParkingService();
-//        String plate = parkingService.signValidator(sc);
+//        String plate = parkingService.plateValidator(sc);
 //        System.out.println("Validated plate: " + plate);
 
 

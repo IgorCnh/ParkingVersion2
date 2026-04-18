@@ -39,7 +39,7 @@ public class Vehicle {
 
     @Override
     public String toString() {
-        return "Vehicle data: \nId:" + vehicleId + " \nplate: " + plate + " \nmodel: " + model;
+        return "Plate: " + plate + " / Model: " + model;
     }
 
 

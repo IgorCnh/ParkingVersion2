@@ -159,6 +159,39 @@ public class RecordDao implements RecordDaoInterface {
         }
     }
 
+    @Override
+    public List<ParkingRecords> findAllActiveRecords() {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        List<ParkingRecords> records = new ArrayList<>();
+        try {
+            st = conn.prepareStatement("SELECT parkingRecord.*, vehicles.vehicleModel FROM parkingRecord join vehicles on vehicles.vehiclePlate = parkingRecord.vehiclePlate WHERE status = 'ACTIVE'");
+            rs = st.executeQuery();
+            while (rs.next()) {
+                ParkingRecords record = new ParkingRecords();
+                record.setRecordId(rs.getInt("registerID"));
+                Vehicle vehicle = new Vehicle();
+                vehicle.setPlate(rs.getString("vehiclePlate"));
+                vehicle.setModel(rs.getString("vehicleModel"));
+                record.setVehicle(vehicle);
+                record.setEntryTime(rs.getTimestamp("entryTime").toLocalDateTime());
+                if (rs.getTimestamp("exitTime") != null) {
+                    record.setExitTime(rs.getTimestamp("exitTime").toLocalDateTime());
+                }
+                if (rs.getString("status") != null) {
+                    record.setStatus(RecordStatus.valueOf(rs.getString("status")));
+                }
+                records.add(record);
+            }
+            return records;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
     public LocalDateTime getEntryTime(String plate) {
         PreparedStatement st = null;
         ResultSet rs = null;
