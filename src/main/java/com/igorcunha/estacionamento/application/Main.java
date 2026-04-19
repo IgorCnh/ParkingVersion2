@@ -19,8 +19,8 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         int option = 0;
         System.out.println("Welcome to the Parking Lot Management System!");
-        while (option != 4) {
-            System.out.print("=========================//=========================\nSelect an option: \n1) - Park \n2) - Exit with a vehicle \n3) - Find All parked vehicles \n4) - Exit Program\nSelect one => ");
+        while (option != 5) {
+            System.out.print("=========================//=========================\nSelect an option: \n1) - Park \n2) - Exit with a vehicle \n3) - Find All parked vehicles\n4) - Find all vehicle records \n5) - Exit Program\n=========================//=========================\nSelect one => ");
             try {
                 option = sc.nextInt();
             } catch (Exception e) {
@@ -41,14 +41,6 @@ public class Main {
                     }
                     Vehicle vehicle = new Vehicle(plate, model);
                     parkingService.handleVehicleEntry(plate, model);
-                    System.out.println("Entering vehicle in parking lot...");
-                    if (!parkingService.isVehicleAlreadyParked(vehicle)) {
-                        ParkingRecords parkingRecords = new ParkingRecords(vehicle);
-                        recordDao.insertRecord(parkingRecords);
-                        System.out.println("Vehicle Parked Successfully! \n" + recordDao.findActiveRecord(vehicle));
-                    } else {
-                        System.out.println("Vehicle Already Parked\n" + recordDao.findActiveRecord(vehicle));
-                    }
                     break;
                 case 2:
                     System.out.println("Option 2 selected: Exit with a vehicle \nType the vehicle plate: ");
@@ -82,7 +74,18 @@ public class Main {
                     vehicleDao.findAllActiveVehicles().forEach(x -> System.out.println("Vehicle: " + x));
                     break;
                 case 4:
-                    System.out.println("Option 4 selected: Exit Program \nExiting program!");
+                    System.out.print("Option 4 selected: Find all vehicle records: \nType the vehicle plate: ");
+                    plate = parkingService.plateValidator(sc);
+                    vehicle = vehicleDao.findVehicleByPlate(plate);
+                    if (vehicle == null) {
+                        System.out.println("Vehicle with plate " + plate + " not found");
+                    }else {
+                        System.out.println("Records: ");
+                        vehicleDao.findAllVehicleRecords(vehicle).forEach(System.out::println);
+                    }
+                    break;
+                case 5:
+                    System.out.println("Option 5 selected: Exit Program\nExiting...");
                     break;
                 default:
                     System.out.println("Invalid option, please select a valid option.");
