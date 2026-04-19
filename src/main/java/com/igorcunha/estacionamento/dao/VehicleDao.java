@@ -109,8 +109,8 @@ public class VehicleDao implements VehicleDaoInterface {
             rs = st.executeQuery();
             while (rs.next()) {
                 Vehicle vehicle = new Vehicle();
-                vehicle.setPlate(rs.getString("plate"));
-                vehicle.setModel(rs.getString("model"));
+                vehicle.setPlate(rs.getString("vehiclePlate"));
+                vehicle.setModel(rs.getString("vehicleModel"));
                 vehicle.setVehicleId(rs.getInt("vehicleID"));
                 vehicles.add(vehicle);
             }

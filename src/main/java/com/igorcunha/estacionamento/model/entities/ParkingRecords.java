@@ -2,8 +2,6 @@ package com.igorcunha.estacionamento.model.entities;
 
 import com.igorcunha.estacionamento.model.enums.RecordStatus;
 
-import java.nio.file.LinkOption;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class ParkingRecords {

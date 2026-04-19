@@ -39,7 +39,6 @@ public class Main {
                         System.out.println("Registration cancelled.");
                         break;
                     }
-                    Vehicle vehicle = new Vehicle(plate, model);
                     parkingService.handleVehicleEntry(plate, model);
                     break;
                 case 2:

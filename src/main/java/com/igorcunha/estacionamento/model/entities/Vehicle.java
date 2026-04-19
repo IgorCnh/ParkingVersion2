@@ -29,7 +29,6 @@ public class Vehicle {
         this.vehicleId = vehicleId;
     }
 
-    private int id;
     public Vehicle(String plate, String model) {
         this.plate = plate.toUpperCase();
         this.model = model;
